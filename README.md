@@ -62,7 +62,7 @@ $ make run
 
 * Mas pode-se chamar diretamente o arquivo usando a chamada 
 ```
-$ python -m src
+$ python -m conciliacao-bancaria --bank-file=<path_to_input_file>
 ```
 
 ### Gerando executavel

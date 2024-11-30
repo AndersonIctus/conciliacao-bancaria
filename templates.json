@@ -14,7 +14,7 @@
                 "header": "Data",
                 "tipo": "date",
                 "transform": [{
-                    "entrada": "DD/MM/YYYY hh:mm:ss",
+                    "entrada": "DD/MM/YYYY hh:mm",
                     "saida": "DD/MM/YYYY"
                 }]
             },
@@ -23,7 +23,7 @@
                 "header": "Data",
                 "tipo": "time",
                 "transform": [{
-                    "entrada": "DD/MM/YYYY hh:mm:ss",
+                    "entrada": "DD/MM/YYYY hh:mm",
                     "saida": "hh:mm:ss"
                 }]
             },

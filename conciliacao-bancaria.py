@@ -10,8 +10,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Conciliação Bancária")
     parser.add_argument(
         "--bank-file",
-        required=False,
-        default="data/input/bank-default.cora.csv",
+        required=True,
         help="Caminho do arquivo de extrato bancário (ex.: bank_statement.csv).",
     )
     # parser.add_argument(

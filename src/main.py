@@ -3,6 +3,7 @@ import sys
 import os
 
 from src.models.template import Template
+from src.conciliacao.conciliacao import conciliar_arquivo
 
 sys.path.append('./src')
 
@@ -36,9 +37,9 @@ def main(input_bank_file):
         
         if template:
             template_obj = Template(template)  # Cria o objeto Template a partir do template encontrado
-            print("Template carregado:")
-            print(template_obj)
+            print("Template carregado com sucesso !!")
         else:
             raise ValueError(f"Nenhum template encontrado para o banco {nome_banco}.")
     
-    ## 
+    ## Com o template, agora deve-se gerar o arquivo de conciliação do arquivo bancario
+    conciliar_arquivo(input_bank_file, template_obj)
