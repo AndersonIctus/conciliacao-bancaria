@@ -8,7 +8,7 @@ Projeto em python para poder criar uma forma fácil de criar conciliação banc�
 
 3. Cada arquivo bancário deve ter o seguinte padrao de nomenclatura
 
-   `nome_banco.descricao_arquivo.csv`
+   `descricao_arquivo.nome_banco.csv`
 
 ### Dependências
 ```
@@ -67,4 +67,4 @@ $ python -m src
 
 ### Gerando executavel
 * Use `make deploy` para gerar na pasta dist um executável do projeto que pode ser utilizado em qualquer ambiente.
-* É criado o arquivo /dist/main.exe
+* É criado o arquivo /dist/conciliacao-bancaria.exe

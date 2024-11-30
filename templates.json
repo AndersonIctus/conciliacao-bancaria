@@ -1,0 +1,56 @@
+[
+    {
+        "extensao": "cora",
+        "banco": "Cora",
+        "headers": ["Tipo", "Título", "Descrição", "Valor", "Data"],
+        "fields": [
+            {
+                "coluna": "Id",
+                "tipo": "hash",
+                "hashHeaders": ["Data", "Descrição", "Valor"]
+            },
+            {
+                "coluna": "Data",
+                "header": "Data",
+                "tipo": "date",
+                "transform": [{
+                    "entrada": "DD/MM/YYYY hh:mm:ss",
+                    "saida": "DD/MM/YYYY"
+                }]
+            },
+            {
+                "coluna": "Hora",
+                "header": "Data",
+                "tipo": "time",
+                "transform": [{
+                    "entrada": "DD/MM/YYYY hh:mm:ss",
+                    "saida": "hh:mm:ss"
+                }]
+            },
+            {
+                "coluna": "Nome",
+                "header": "Descrição",
+                "tipo": "string"
+            },
+            {
+                "coluna": "Tipo",
+                "header": "Tipo",
+                "tipo": "string",
+                "transform": [
+                    { "entrada": "Débito", "saida": "DEBITO"},
+                    { "entrada": "Crédito", "saida": "CREDITO"}
+                ]
+            },
+            {
+                "coluna": "Banco",
+                "tipo": "static",
+                "value": "Cora"
+            },
+            {
+                "coluna": "Valor",
+                "header": "Descrição",
+                "tipo": "decimal"
+            }
+        ]
+    }
+]
