@@ -3,3 +3,4 @@ openpyxl
 xlrd
 pdfkit
 python-dotenv
+pyinstaller
