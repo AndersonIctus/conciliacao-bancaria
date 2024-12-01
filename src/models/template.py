@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Dict, Optional
+from typing import List, Dict
 
 from src.models.field import Field
 from src.models.transformacao import Transformacao
@@ -8,6 +8,7 @@ from src.models.transformacao import Transformacao
 class Template:
     extensao: str
     banco: str
+    outputPath: str
     headers: List[str]
     fields: List[Field]
     
@@ -16,6 +17,7 @@ class Template:
         # Atribuindo valores diretamente do dicionário 'data'
         self.extensao = data["extensao"]
         self.banco = data["banco"]
+        self.outputPath = data["outputPath"]
         self.headers = data["headers"]
         
         # Inicializando a lista de campos (fields)

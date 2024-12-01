@@ -2,6 +2,7 @@
     {
         "extensao": "cora",
         "banco": "Cora",
+        "outputPath": "conciliados/cora",
         "headers": ["Tipo", "Título", "Descrição", "Valor", "Data"],
         "fields": [
             {
@@ -35,7 +36,7 @@
             {
                 "coluna": "Tipo",
                 "header": "Tipo",
-                "tipo": "string",
+                "tipo": "choose",
                 "transform": [
                     { "entrada": "Débito", "saida": "DEBITO"},
                     { "entrada": "Crédito", "saida": "CREDITO"}
@@ -48,7 +49,7 @@
             },
             {
                 "coluna": "Valor",
-                "header": "Descrição",
+                "header": "Valor",
                 "tipo": "decimal"
             }
         ]

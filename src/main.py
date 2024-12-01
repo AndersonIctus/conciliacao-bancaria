@@ -3,7 +3,7 @@ import sys
 import os
 
 from src.models.template import Template
-from src.conciliacao.conciliacao import conciliar_arquivo
+from src.conciliacao.conciliacao import Conciliacao
 
 sys.path.append('./src')
 
@@ -23,6 +23,7 @@ def extrair_nome_banco(nome_arquivo: str) -> str:
 
 
 def main(input_bank_file):
+    print("==================================================")
     print("======= INICIANDO CONCILIAÇÃO")
     print(f"Arquivo: {input_bank_file}")
     
@@ -42,4 +43,6 @@ def main(input_bank_file):
             raise ValueError(f"Nenhum template encontrado para o banco {nome_banco}.")
     
     ## Com o template, agora deve-se gerar o arquivo de conciliação do arquivo bancario
-    conciliar_arquivo(input_bank_file, template_obj)
+    Conciliacao().conciliar_dados(input_bank_file, template_obj)
+    
+    print("==================================================")
