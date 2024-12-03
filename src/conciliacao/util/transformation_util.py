@@ -24,6 +24,8 @@ class TransformacaoUtil:
             value = util.transform_hash(data, field)
         elif field.tipo == 'decimal':
             value = util.transform_decimal(value)
+        elif field.tipo == 'number':
+            value = float(value)
         elif field.transform:
             value = util.apply_transformation(value, field)
         

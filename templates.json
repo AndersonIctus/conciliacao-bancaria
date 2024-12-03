@@ -2,7 +2,7 @@
     {
         "extensao": "cora",
         "banco": "Cora",
-        "outputPath": "conciliados/cora",
+        "outputPath": "conciliados",
         "headers": ["Tipo", "Título", "Descrição", "Valor", "Data"],
         "fields": [
             {

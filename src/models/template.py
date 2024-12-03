@@ -31,3 +31,27 @@ class Template:
                 value=f.get("value")
             ) for f in data["fields"]
         ]
+
+    # Método clone
+    def clone(self) -> "Template":
+        """
+        Cria e retorna uma cópia da instância atual de Template.
+        """
+        return Template({
+            "extensao": self.extensao,
+            "banco": self.banco,
+            "outputPath": self.outputPath,
+            "headers": self.headers.copy(),  # Faz uma cópia para evitar mutação acidental
+            "fields": [
+                {
+                    "coluna": field.coluna,
+                    "tipo": field.tipo,
+                    "header": field.header,
+                    "hashHeaders": field.hashHeaders,
+                    "transform": [
+                        {"entrada": t.entrada, "saida": t.saida} for t in field.transform
+                    ],
+                    "value": field.value
+                } for field in self.fields
+            ]
+        })

@@ -1,10 +1,13 @@
+from datetime import datetime
 import os
 import csv
 from typing import List
 
 from dataclasses import dataclass
+from collections import defaultdict
 
-from src.conciliacao.data_field import DataField
+from src.conciliacao.util.data_helper import DataHelper
+from src.models.field import Field
 from src.models.template import Template
 from src.conciliacao.data_line import DataLine
 
@@ -14,58 +17,96 @@ class Conciliacao:
     
     def load_actual_data_conciliation(self, template: Template) -> List[DataLine]:
         print('Carregando dados já conciliados')
-        # Construindo o caminho do arquivo
-        # TODO: DEVE PEGAR MAIS DE UM ARQUIVO DE CONCILIAÇÃO, pois pode ter conciliação de vários meses!
-        data_conciliacao = '2024'
-        file_path = os.path.join(self.output_path, template.outputPath, f"Conciliados.{data_conciliacao}.CON")
-        
-        # Verifica se o arquivo existe
-        if not os.path.exists(file_path):
-            print(f"Arquivo {file_path} não encontrado.")
+
+        # Caminho da pasta onde estão os arquivos .CON
+        folder_path = os.path.join(self.output_path, template.outputPath)
+
+        # Verifica se a pasta existe
+        if not os.path.exists(folder_path):
+            print(f"Pasta {folder_path} não encontrada. Criando a pasta...")
+            os.makedirs(folder_path)  # Cria a pasta e subpastas, se necessário
+
+        # Filtrar arquivos com extensão .CON
+        con_files = [f for f in os.listdir(folder_path) if f.endswith('.CON')]
+        if not con_files:
+            print(f"Nenhum arquivo .CON encontrado em {folder_path}.")
             return []
 
-        conciliados = []
-        # Abrindo o arquivo CSV para leitura
-        with open(file_path, mode="r", encoding="utf-8") as file:
-            reader = csv.DictReader(file, delimiter=";")  # Supondo que o separador seja `;`
+        conciliados: List[DataLine] = []
+        
+        # Processa cada arquivo .CON
+        template_padrao = template.clone()
+        template_padrao.fields = [Field(coluna=f.coluna,
+                tipo='number' if f.tipo == 'decimal' else 'string',
+                header=f.coluna,
+                value=f.value) 
+            for f in template.fields]
+        template_padrao.headers = [h.coluna for h in template.fields]
+        
+        for file_name in con_files:
+            file_path = os.path.join(folder_path, file_name)
+            print(f"Lendo o arquivo {file_path}...")
+            
+            try:
+                # Abre o arquivo e lê os dados
+                with open(file_path, mode="r", encoding="utf-8") as file:
+                    reader = csv.DictReader(file, delimiter=";")  # Supondo separador `;`
+                    for row in reader:
+                        conciliados.append(DataLine(row, template_padrao))
+                print(f"{file_name}: {len(conciliados)} registros carregados.")
+                
+            except Exception as e:
+                print(f"Erro ao processar o arquivo {file_name}: {e}")
 
-            # Lendo cada linha e criando DataLine
-            for row in reader:
-                data_line = DataLine(fields=[
-                    DataField(column=field.coluna, value=row.get(field.coluna))
-                    for field in template.fields if field.coluna in row
-                ])
-                conciliados.append(data_line)
-
-        print(f"{len(conciliados)} registros carregados do arquivo {file_path}.")
+        print(f"Total de {len(conciliados)} registros carregados de todos os arquivos .CON.")
         return conciliados
     
-    def save_actual_data_conciliation(self, template: Template, data_conciliacao: str, data_lines: List[DataLine]):
+    def map_dados_conciliados(self, data_lines: List[DataLine]):
+        # Mapa para armazenar os dados, usando defaultdict para inicializar automaticamente listas
+        mapa_conciliados = defaultdict(list)
+
+        for data_line in data_lines:
+            # Usa o método get_data_extensao para gerar a chave
+            date_reference = datetime.strptime(data_line.get_field_by_column('Data').value, '%d/%m/%Y')
+            chave = DataHelper.get_data_extensao(date_reference)
+
+            # Adiciona o DataLine à lista correspondente à chave
+            mapa_conciliados[chave].append(data_line)
+
+        # Converte o defaultdict de volta para um dict normal se necessário
+        return dict(mapa_conciliados)
+    
+    def save_actual_data_conciliation(self, data_lines: List[DataLine], template: Template):
         print('Salvando dados conciliados')
-
-        # Construindo o caminho do arquivo
-        file_path = os.path.join(self.output_path, template.outputPath, f"Conciliados.{data_conciliacao}.CON")
-        
-        # Certificando-se de que o diretório existe
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-
         # Obter cabeçalhos a partir dos campos do template
         headers = [field.coluna for field in template.fields]
+        mp_dados_conciliados = self.map_dados_conciliados(data_lines)
+        
+        # Caminho da pasta onde estão os arquivos .CON
+        folder_path = os.path.join(self.output_path, template.outputPath)
+         # Verifica se a pasta existe
+        if not os.path.exists(folder_path):
+            print(f"Pasta {folder_path} não encontrada. Criando a pasta...")
+            os.makedirs(folder_path)  # Cria a pasta e subpastas, se necessário
+        
+        # Iterando sobre o mapa e gravando em arquivos
+        for chave, dados in mp_dados_conciliados.items():
+            # Nome do arquivo baseado na chave (data)
+            nome_arquivo = f"Conciliados.{chave}.CON"
+            file_path = os.path.join(folder_path, nome_arquivo)
+            
+            # Abrindo o arquivo para gravação
+            with open(file_path, mode='w', newline='', encoding='utf-8') as file:
+                writer = csv.DictWriter(file, fieldnames=headers, delimiter=";")
+                
+                writer.writeheader()
+                # Escrevendo os dados no arquivo
+                for data_line in dados:
+                    # Criar um dicionário para cada linha, usando os valores de `DataField`
+                    row = {field.column: field.value for field in data_line.fields}
+                    writer.writerow(row)
 
-        # Escrever o arquivo CSV
-        with open(file_path, mode="w", encoding="utf-8", newline="") as file:
-            writer = csv.DictWriter(file, fieldnames=headers, delimiter=";")
-
-            # Escrever cabeçalho
-            writer.writeheader()
-
-            # Escrever linhas de dados
-            for data_line in data_lines:
-                # Criar um dicionário para cada linha, usando os valores de `DataField`
-                row = {field.column: field.value for field in data_line.fields}
-                writer.writerow(row)
-
-        print(f"Arquivo salvo em {file_path}.")
+            print(f"Arquivo {file_path} atualizado com {len(dados)} registros.")
 
     def to_conciliation_from_template(self, input_bank_file: str, template: Template) -> List[DataLine]:
         data_lines: List[DataLine] = []
@@ -82,16 +123,45 @@ class Conciliacao:
         ## Retornando linhas
         return data_lines
 
-    def conciliar_dados(self, input_bank_file, template: Template) -> List[DataLine]:
+    def conciliar_listas(self, atual: List[DataLine], novos: List[DataLine]) -> List[DataLine]:
+        """
+        Compara as listas `atual` e `novos` e retorna os elementos de `novos` que não estão em `atual`.
+
+        :param atual: Lista de DataLine já existentes.
+        :param novos: Lista de novos DataLine.
+        :return: Lista de DataLine exclusivos em `novos`.
+        """
+        print('Conciliando dados...')
+
+        # Converte a lista `atual` para um conjunto de identificadores únicos
+        atual_set = set(atual) 
+        
+        # Filtra os elementos de `novos` que não estão em `atual_set`
+        conciliados = [novo for novo in novos if novo not in atual_set]
+
+        print(f"{len(conciliados)} registros novos encontrados.")
+        return conciliados
+    
+    def conciliar_dados(self, input_bank_file, template: Template):
         print(f'Conciliando arquivo "{input_bank_file}"')
+        
         # 1 - Carrega os arquivos já conciliados em uma lista
         atual_conciliados = self.load_actual_data_conciliation(template)
         
         # 2 - Transforma o arquivo passado para a forma conciliada considerando o template passado
         input_conciliados = self.to_conciliation_from_template(input_bank_file, template)
         
-        
         # 3 - Compara as entradas sobrando somente os dados que serão conciliados
-        dados_conciliados = '' 
-        
-        return []
+        if len(atual_conciliados) == 0:
+            dados_conciliados = input_conciliados
+        else:
+            dados_conciliados = self.conciliar_listas(atual_conciliados, input_conciliados)
+            
+        # 4 - Gravar os dados após conciliação
+        print(dados_conciliados)
+        if len(dados_conciliados) > 0:
+            dados_conciliados = atual_conciliados + dados_conciliados
+            dados_conciliados.sort(key=lambda x: (datetime.strptime(x.get_field_by_column('Data').value, "%d/%m/%Y"), x.get_field_by_column('Hora').value))
+            self.save_actual_data_conciliation(dados_conciliados, template)
+        else:
+            print('Nenhum dado para conciliar ...')
