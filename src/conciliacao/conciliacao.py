@@ -1,7 +1,7 @@
 from datetime import datetime
 import os
 import csv
-from typing import List
+from typing import List, Dict
 
 from dataclasses import dataclass
 from collections import defaultdict
@@ -16,8 +16,6 @@ class Conciliacao:
     output_path = 'data/output/'
     
     def load_actual_data_conciliation(self, template: Template) -> List[DataLine]:
-        print('Carregando dados já conciliados')
-
         # Caminho da pasta onde estão os arquivos .CON
         folder_path = os.path.join(self.output_path, template.outputPath)
 
@@ -45,7 +43,7 @@ class Conciliacao:
         
         for file_name in con_files:
             file_path = os.path.join(folder_path, file_name)
-            print(f"Lendo o arquivo {file_path}...")
+            print(f"== >>>> Lendo o arquivo {file_path}...")
             
             try:
                 # Abre o arquivo e lê os dados
@@ -58,7 +56,7 @@ class Conciliacao:
             except Exception as e:
                 print(f"Erro ao processar o arquivo {file_name}: {e}")
 
-        print(f"Total de {len(conciliados)} registros carregados de todos os arquivos .CON.")
+        print(f"== >>>> Total de {len(conciliados)} registros carregados de todos os arquivos .CON.")
         return conciliados
     
     def map_dados_conciliados(self, data_lines: List[DataLine]):
@@ -77,7 +75,7 @@ class Conciliacao:
         return dict(mapa_conciliados)
     
     def save_actual_data_conciliation(self, data_lines: List[DataLine], template: Template):
-        print('Salvando dados conciliados')
+        print('== **** Salvando dados conciliados')
         # Obter cabeçalhos a partir dos campos do template
         headers = [field.coluna for field in template.fields]
         mp_dados_conciliados = self.map_dados_conciliados(data_lines)
@@ -106,7 +104,7 @@ class Conciliacao:
                     row = {field.column: field.value for field in data_line.fields}
                     writer.writerow(row)
 
-            print(f"Arquivo {file_path} atualizado com {len(dados)} registros.")
+            print(f"== >>>> Arquivo {file_path} atualizado com {len(dados)} registros.")
 
     def to_conciliation_from_template(self, input_bank_file: str, template: Template) -> List[DataLine]:
         data_lines: List[DataLine] = []
@@ -131,7 +129,7 @@ class Conciliacao:
         :param novos: Lista de novos DataLine.
         :return: Lista de DataLine exclusivos em `novos`.
         """
-        print('Conciliando dados...')
+        print('==========  Conciliando dados  ==========')
 
         # Converte a lista `atual` para um conjunto de identificadores únicos
         atual_set = set(atual) 
@@ -139,11 +137,49 @@ class Conciliacao:
         # Filtra os elementos de `novos` que não estão em `atual_set`
         conciliados = [novo for novo in novos if novo not in atual_set]
 
-        print(f"{len(conciliados)} registros novos encontrados.")
+        print(f"== >>>>> {len(conciliados)} registros novos encontrados.")
         return conciliados
+
+    def resume_data(self, dados: List[DataLine]):
+        """
+        Faz um resumo dos dados listados, separando créditos, débitos e o saldo final.
+
+        :param dados: Lista de objetos DataLine a ser resumida.
+        :return: Um dicionário contendo total de créditos, débitos e saldo final.
+        """
+        print("==================  Resumo dos dados  ==================")
+
+        total_credito = 0.0
+        total_debito = 0.0
+
+        # Itera pelos dados para calcular os totais
+        for data in dados:
+            tipo_field = data.get_field_by_column("Tipo")
+            valor_field = data.get_field_by_column("Valor")
+
+            if not tipo_field or not valor_field:
+                print("Dados incompletos em um dos registros. Ignorando...")
+                continue
+
+            tipo = tipo_field.value
+            valor = float(valor_field.value)
+
+            if tipo == "CREDITO":
+                total_credito += valor
+            elif tipo == "DEBITO":
+                total_debito += valor
+
+        # Calcula o saldo final
+        saldo_final = total_credito - total_debito
+
+        # Retorna o resumo
+        print(f"== Total Crédito: {total_credito:.2f}")
+        print(f"==  Total Débito: {total_debito:.2f}")
+        print(f"==         Saldo: {saldo_final:.2f}")
+        print("========================================================")
     
     def conciliar_dados(self, input_bank_file, template: Template):
-        print(f'Conciliando arquivo "{input_bank_file}"')
+        print(f'== Conciliando arquivo "{input_bank_file}"')
         
         # 1 - Carrega os arquivos já conciliados em uma lista
         atual_conciliados = self.load_actual_data_conciliation(template)
@@ -158,10 +194,14 @@ class Conciliacao:
             dados_conciliados = self.conciliar_listas(atual_conciliados, input_conciliados)
             
         # 4 - Gravar os dados após conciliação
-        print(dados_conciliados)
         if len(dados_conciliados) > 0:
+            print('======= RESUMO CONCILIADOS')
+            self.resume_data(dados_conciliados)
             dados_conciliados = atual_conciliados + dados_conciliados
             dados_conciliados.sort(key=lambda x: (datetime.strptime(x.get_field_by_column('Data').value, "%d/%m/%Y"), x.get_field_by_column('Hora').value))
             self.save_actual_data_conciliation(dados_conciliados, template)
+            
+            print('======= RESUMO FINAL')
+            self.resume_data(dados_conciliados)
         else:
             print('Nenhum dado para conciliar ...')

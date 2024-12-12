@@ -13,16 +13,7 @@ if __name__ == "__main__":
         required=True,
         help="Caminho do arquivo de extrato bancário (ex.: bank_statement.csv).",
     )
-    # parser.add_argument(
-    #     "--system-file",
-    #     required=True,
-    #     help="Caminho do arquivo de relatório do sistema (ex.: system_report.xlsx).",
-    # )
-    # parser.add_argument(
-    #     "--output",
-    #     required=True,
-    #     help="Caminho do arquivo de saída para o relatório (ex.: reconciliation_report.xlsx).",
-    # )
+    
     args = parser.parse_args()
 
     # Chamada da função principal com os argumentos fornecidos

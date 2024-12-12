@@ -38,7 +38,7 @@ def main(input_bank_file):
         
         if template:
             template_obj = Template(template)  # Cria o objeto Template a partir do template encontrado
-            print("Template carregado com sucesso !!")
+            print("***** Template carregado com sucesso !")
         else:
             raise ValueError(f"Nenhum template encontrado para o banco {nome_banco}.")
     

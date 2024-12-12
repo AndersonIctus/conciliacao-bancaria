@@ -80,4 +80,3 @@ class TransformacaoUtil:
             return self.transform_choose(value, field.transform)
         else:
             raise ValueError(f"Tipo desconhecido: {tipo}")
-    
