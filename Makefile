@@ -1,5 +1,13 @@
+# Defina as variáveis com valores padrão
+BANK_FILE ?= data/input/bank-default.cora.csv
+
 deploy:
-	pyinstaller --onefile src/main.py
+	pyinstaller --onefile conciliacao-bancaria.py
+	copy templates.json dist
+	copy conciliar_arquivo.bat dist
 
 run: 
-	python src/main.py
+	python conciliacao-bancaria.py --bank-file $(BANK_FILE)
+
+debug:
+	python -m pdb conciliacao-bancaria.py --bank-file $(BANK_FILE)
