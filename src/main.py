@@ -10,10 +10,15 @@ sys.path.append('./src')
 # Função para extrair o nome do banco do nome do arquivo
 def extrair_nome_banco(nome_arquivo: str) -> str:
     # Remover a extensão do arquivo (se necessário)
-    nome_base = os.path.splitext(nome_arquivo)[0]
+    nome_base = os.path.basename(nome_arquivo)
+    print('Nome Base: ' + nome_base)
+    
+    # Remover a extensão do arquivo (a partir do último ponto)
+    nome_sem_extensao = os.path.splitext(nome_base)[0]
+    print('Nome Base (sem extensão):', nome_sem_extensao)
     
     # Dividir o nome do arquivo pelo ponto (.)
-    partes = nome_base.split('.')
+    partes = nome_sem_extensao.split('.')
     
     # Verificar se o nome do banco está presente (segunda parte)
     if len(partes) >= 2:
