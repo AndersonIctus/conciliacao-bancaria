@@ -10,5 +10,5 @@ REM Obtém o caminho completo do arquivo arrastado
 set bank_file=%~1
 
 REM Chama o make, passando o caminho do arquivo como uma variável
-conciliacao-bancaria.exe --bank-file %bank_file%
+conciliacao-bancaria.exe --bank-file "%bank_file%"
 pause
