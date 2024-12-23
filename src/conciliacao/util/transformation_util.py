@@ -25,7 +25,7 @@ class TransformacaoUtil:
         elif field.tipo == 'decimal':
             value = util.transform_decimal(value)
         elif field.tipo == 'number':
-            value = float(value.replace("-", ""))
+            value = float(value.replace("-", "").replace(",", "."))
         elif field.transform:
             value = util.apply_transformation(value, field)
         

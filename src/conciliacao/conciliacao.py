@@ -102,6 +102,7 @@ class Conciliacao:
                 for data_line in dados:
                     # Criar um dicionário para cada linha, usando os valores de `DataField`
                     row = {field.column: field.value for field in data_line.fields}
+                    row['Valor'] = str(row['Valor']).replace('.', ',')
                     writer.writerow(row)
 
             print(f"== >>>> Arquivo {file_path} atualizado com {len(dados)} registros.")
@@ -162,7 +163,7 @@ class Conciliacao:
                 continue
 
             tipo = tipo_field.value
-            valor = float(valor_field.value)
+            valor = float(str(valor_field.value).replace(",", "."))
 
             if tipo == "CREDITO":
                 total_credito += valor
