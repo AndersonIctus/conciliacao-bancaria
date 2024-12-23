@@ -1,7 +1,7 @@
 from datetime import datetime
 import os
 import csv
-from typing import List, Dict
+from typing import List
 
 from dataclasses import dataclass
 from collections import defaultdict
@@ -25,14 +25,14 @@ class Conciliacao:
             os.makedirs(folder_path)  # Cria a pasta e subpastas, se necessário
 
         # Filtrar arquivos com extensão .CON
-        con_files = [f for f in os.listdir(folder_path) if f.endswith('.CON')]
+        con_files = [f for f in os.listdir(folder_path) if f.endswith('.csv')]
         if not con_files:
-            print(f"Nenhum arquivo .CON encontrado em {folder_path}.")
+            print(f"Nenhum arquivo .csv encontrado em {folder_path}.")
             return []
 
         conciliados: List[DataLine] = []
         
-        # Processa cada arquivo .CON
+        # Processa cada arquivo de saída
         template_padrao = template.clone()
         template_padrao.fields = [Field(coluna=f.coluna,
                 tipo='number' if f.tipo == 'decimal' else 'string',
@@ -56,7 +56,7 @@ class Conciliacao:
             except Exception as e:
                 print(f"Erro ao processar o arquivo {file_name}: {e}")
 
-        print(f"== >>>> Total de {len(conciliados)} registros carregados de todos os arquivos .CON.")
+        print(f"== >>>> Total de {len(conciliados)} registros carregados de todos os arquivos .csv.")
         return conciliados
     
     def map_dados_conciliados(self, data_lines: List[DataLine]):
@@ -90,7 +90,7 @@ class Conciliacao:
         # Iterando sobre o mapa e gravando em arquivos
         for chave, dados in mp_dados_conciliados.items():
             # Nome do arquivo baseado na chave (data)
-            nome_arquivo = f"Conciliados.{chave}.CON"
+            nome_arquivo = f"Conciliados.{chave}.csv"
             file_path = os.path.join(folder_path, nome_arquivo)
             
             # Abrindo o arquivo para gravação

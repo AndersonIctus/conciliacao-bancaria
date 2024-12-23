@@ -3,43 +3,35 @@
         "extensao": "cora",
         "banco": "Cora",
         "outputPath": "conciliados",
-        "headers": ["Tipo", "Título", "Descrição", "Valor", "Data"],
+        "headers": ["Data","Transação","Tipo Transação","Identificação","Valor"],
         "fields": [
             {
                 "coluna": "Id",
                 "tipo": "hash",
-                "hashHeaders": ["Data", "Descrição", "Valor"]
+                "hashHeaders": ["Data", "Identificação", "Valor"]
             },
             {
                 "coluna": "Data",
                 "header": "Data",
-                "tipo": "date",
-                "transform": [{
-                    "entrada": "DD/MM/YYYY hh:mm",
-                    "saida": "DD/MM/YYYY"
-                }]
+                "tipo": "string"
             },
             {
                 "coluna": "Hora",
-                "header": "Data",
-                "tipo": "time",
-                "transform": [{
-                    "entrada": "DD/MM/YYYY hh:mm",
-                    "saida": "hh:mm:ss"
-                }]
+                "tipo": "static",
+                "value": "00:00"
             },
             {
                 "coluna": "Nome",
-                "header": "Descrição",
+                "header": "Identificação",
                 "tipo": "string"
             },
             {
                 "coluna": "Tipo",
-                "header": "Tipo",
+                "header": "Tipo Transação",
                 "tipo": "choose",
                 "transform": [
-                    { "entrada": "Débito", "saida": "DEBITO"},
-                    { "entrada": "Crédito", "saida": "CREDITO"}
+                    { "entrada": "DÉBITO", "saida": "DEBITO"},
+                    { "entrada": "CRÉDITO", "saida": "CREDITO"}
                 ]
             },
             {
@@ -50,7 +42,12 @@
             {
                 "coluna": "Valor",
                 "header": "Valor",
-                "tipo": "decimal"
+                "tipo": "number"
+            },
+			{
+                "coluna": "Observação",
+                "tipo": "static",
+                "value": ""
             }
         ]
     },
@@ -106,6 +103,11 @@
                 "coluna": "Valor",
                 "header": "Valor",
                 "tipo": "decimal"
+            },
+			{
+                "coluna": "Observação",
+                "tipo": "static",
+                "value": ""
             }
         ]
     }
