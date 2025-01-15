@@ -30,6 +30,12 @@ class DataLine:
                 return field
         return None
     
+    def get_hash_from_headers(self, headers: List[str]) -> str:
+        textHash = ""
+        for header in headers:
+            textHash += str(self.get_field_by_column(header).value)
+        return TransformacaoUtil.create_hash(textHash)
+    
     def __eq__(self, other):
         if not isinstance(other, DataLine):
             return False

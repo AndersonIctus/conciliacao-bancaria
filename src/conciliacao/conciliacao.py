@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import csv
 from typing import List
@@ -141,6 +141,28 @@ class Conciliacao:
         print(f"== >>>>> {len(conciliados)} registros novos encontrados.")
         return conciliados
 
+    def normalizar_duplicacoes(self, dados: List[DataLine]) -> List[DataLine]:
+        seen_ids = {}
+        for dataLine in dados:
+            id_field = dataLine.get_field_by_column("Id")
+            hora_field = dataLine.get_field_by_column("Hora")
+
+            id_value = id_field.value
+            if id_value in seen_ids:
+                # Incrementa o valor do campo "Hora" em 1 segundo
+                try:
+                    hora_value = datetime.strptime(hora_field.value, "%H:%M:%S")
+                    hora_value += timedelta(seconds=1)
+                    hora_field.value = hora_value.strftime("%H:%M:%S")
+                except ValueError:
+                    raise ValueError(f"Formato inválido para Hora: {hora_field.value}")
+                
+                # Refaz o id com os novos valores
+                id_field.value = dataLine.get_hash_from_headers(['Data', 'Hora', 'Nome', 'Valor'])
+            else:
+                seen_ids[id_value] = dataLine
+        return dados
+
     def resume_data(self, dados: List[DataLine]):
         """
         Faz um resumo dos dados listados, separando créditos, débitos e o saldo final.
@@ -196,6 +218,9 @@ class Conciliacao:
             
         # 4 - Gravar os dados após conciliação
         if len(dados_conciliados) > 0:
+            ### TODO: Verificar se dentro dos dados para serem conciliados há alguma duplicação, se houver deve corrigir a duplicação adicionando um segundo ao horário e refazendo o id da duplicação!
+            dados_conciliados = self.normalizar_duplicacoes(dados_conciliados)
+            
             print('======= RESUMO CONCILIADOS')
             self.resume_data(dados_conciliados)
             dados_conciliados = atual_conciliados + dados_conciliados

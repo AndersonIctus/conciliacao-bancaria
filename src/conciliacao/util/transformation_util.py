@@ -5,6 +5,7 @@ import hashlib
 from typing import List, Dict
 
 from src.conciliacao.data_field import DataField
+# from src.conciliacao.data_line import DataLine
 from src.models.transformacao import Transformacao
 from src.models.field import Field
 
@@ -36,6 +37,16 @@ class TransformacaoUtil:
         for header in field.hashHeaders:
             textHash += data[header]
         return hashlib.sha256(textHash.encode()).hexdigest()
+    
+    @staticmethod
+    def create_hash(textHash: str) -> str:
+        return hashlib.sha256(textHash.encode()).hexdigest()
+    
+    # def transform_hash_dataLine(self, dataLine: DataLine, headers: List[str]) -> str:
+    #     textHash = ''
+    #     for header in headers:
+    #         textHash += dataLine.get_field_by_column(header).value
+    #     return hashlib.sha256(textHash.encode()).hexdigest()
     
     def transform_decimal(self, value: str) -> str:
          # Remove o prefixo "R$" e quaisquer espaços
