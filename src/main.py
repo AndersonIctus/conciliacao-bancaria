@@ -35,7 +35,7 @@ def main(input_bank_file):
     nome_banco = extrair_nome_banco(input_bank_file)
     
     ## Carrega templates
-    with open('templates.json', 'r', encoding='utf-8') as file:
+    with open('templates.json', 'r', encoding='iso-8859-1') as file:
         templates = json.load(file)
         
         # Encontra o template com a extensão correspondente ao nome do banco

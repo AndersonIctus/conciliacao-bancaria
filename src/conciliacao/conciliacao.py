@@ -11,6 +11,9 @@ from src.models.field import Field
 from src.models.template import Template
 from src.conciliacao.data_line import DataLine
 
+databank_file_encoding = 'utf-8'
+build_file_encoding = 'iso-8859-1'
+
 @dataclass
 class Conciliacao:
     output_path = 'data/output/'
@@ -47,7 +50,7 @@ class Conciliacao:
             
             try:
                 # Abre o arquivo e lê os dados
-                with open(file_path, mode="r", encoding="utf-8") as file:
+                with open(file_path, mode="r", encoding=build_file_encoding) as file:
                     reader = csv.DictReader(file, delimiter=";")  # Supondo separador `;`
                     for row in reader:
                         conciliados.append(DataLine(row, template_padrao))
@@ -94,7 +97,7 @@ class Conciliacao:
             file_path = os.path.join(folder_path, nome_arquivo)
             
             # Abrindo o arquivo para gravação
-            with open(file_path, mode='w', newline='', encoding='utf-8') as file:
+            with open(file_path, mode='w', newline='', encoding=build_file_encoding) as file:
                 writer = csv.DictWriter(file, fieldnames=headers, delimiter=";")
                 
                 writer.writeheader()
@@ -111,7 +114,7 @@ class Conciliacao:
         data_lines: List[DataLine] = []
         
         # Abrir e ler o arquivo CSV
-        with open(input_bank_file, 'r', encoding='utf-8') as csvfile:
+        with open(input_bank_file, 'r', encoding=databank_file_encoding) as csvfile:
             reader = csv.DictReader(csvfile)  # Ler o CSV como dicionário (coluna -> valor)
             
             # Iterar sobre as linhas do arquivo CSV
