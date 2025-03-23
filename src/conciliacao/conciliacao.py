@@ -1,7 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import csv
-from typing import List, Dict
+from typing import List
 
 from dataclasses import dataclass
 from collections import defaultdict
@@ -10,6 +10,9 @@ from src.conciliacao.util.data_helper import DataHelper
 from src.models.field import Field
 from src.models.template import Template
 from src.conciliacao.data_line import DataLine
+
+databank_file_encoding = 'utf-8'
+build_file_encoding = 'iso-8859-1'
 
 @dataclass
 class Conciliacao:
@@ -25,14 +28,14 @@ class Conciliacao:
             os.makedirs(folder_path)  # Cria a pasta e subpastas, se necessário
 
         # Filtrar arquivos com extensão .CON
-        con_files = [f for f in os.listdir(folder_path) if f.endswith('.CON')]
+        con_files = [f for f in os.listdir(folder_path) if f.endswith('.csv')]
         if not con_files:
-            print(f"Nenhum arquivo .CON encontrado em {folder_path}.")
+            print(f"Nenhum arquivo .csv encontrado em {folder_path}.")
             return []
 
         conciliados: List[DataLine] = []
         
-        # Processa cada arquivo .CON
+        # Processa cada arquivo de saída
         template_padrao = template.clone()
         template_padrao.fields = [Field(coluna=f.coluna,
                 tipo='number' if f.tipo == 'decimal' else 'string',
@@ -47,7 +50,7 @@ class Conciliacao:
             
             try:
                 # Abre o arquivo e lê os dados
-                with open(file_path, mode="r", encoding="utf-8") as file:
+                with open(file_path, mode="r", encoding=build_file_encoding) as file:
                     reader = csv.DictReader(file, delimiter=";")  # Supondo separador `;`
                     for row in reader:
                         conciliados.append(DataLine(row, template_padrao))
@@ -56,7 +59,7 @@ class Conciliacao:
             except Exception as e:
                 print(f"Erro ao processar o arquivo {file_name}: {e}")
 
-        print(f"== >>>> Total de {len(conciliados)} registros carregados de todos os arquivos .CON.")
+        print(f"== >>>> Total de {len(conciliados)} registros carregados de todos os arquivos .csv.")
         return conciliados
     
     def map_dados_conciliados(self, data_lines: List[DataLine]):
@@ -90,11 +93,11 @@ class Conciliacao:
         # Iterando sobre o mapa e gravando em arquivos
         for chave, dados in mp_dados_conciliados.items():
             # Nome do arquivo baseado na chave (data)
-            nome_arquivo = f"Conciliados.{chave}.CON"
+            nome_arquivo = f"Conciliados.{chave}.csv"
             file_path = os.path.join(folder_path, nome_arquivo)
             
             # Abrindo o arquivo para gravação
-            with open(file_path, mode='w', newline='', encoding='utf-8') as file:
+            with open(file_path, mode='w', newline='', encoding=build_file_encoding) as file:
                 writer = csv.DictWriter(file, fieldnames=headers, delimiter=";")
                 
                 writer.writeheader()
@@ -102,6 +105,7 @@ class Conciliacao:
                 for data_line in dados:
                     # Criar um dicionário para cada linha, usando os valores de `DataField`
                     row = {field.column: field.value for field in data_line.fields}
+                    row['Valor'] = str(row['Valor']).replace('.', ',')
                     writer.writerow(row)
 
             print(f"== >>>> Arquivo {file_path} atualizado com {len(dados)} registros.")
@@ -110,7 +114,7 @@ class Conciliacao:
         data_lines: List[DataLine] = []
         
         # Abrir e ler o arquivo CSV
-        with open(input_bank_file, 'r', encoding='utf-8') as csvfile:
+        with open(input_bank_file, 'r', encoding=databank_file_encoding) as csvfile:
             reader = csv.DictReader(csvfile)  # Ler o CSV como dicionário (coluna -> valor)
             
             # Iterar sobre as linhas do arquivo CSV
@@ -140,6 +144,28 @@ class Conciliacao:
         print(f"== >>>>> {len(conciliados)} registros novos encontrados.")
         return conciliados
 
+    def normalizar_duplicacoes(self, dados: List[DataLine]) -> List[DataLine]:
+        seen_ids = {}
+        for dataLine in dados:
+            id_field = dataLine.get_field_by_column("Id")
+            hora_field = dataLine.get_field_by_column("Hora")
+
+            id_value = id_field.value
+            if id_value in seen_ids:
+                # Incrementa o valor do campo "Hora" em 1 segundo
+                try:
+                    hora_value = datetime.strptime(hora_field.value, "%H:%M:%S")
+                    hora_value += timedelta(seconds=1)
+                    hora_field.value = hora_value.strftime("%H:%M:%S")
+                except ValueError:
+                    raise ValueError(f"Formato inválido para Hora: {hora_field.value}")
+                
+                # Refaz o id com os novos valores
+                id_field.value = dataLine.get_hash_from_headers(['Data', 'Hora', 'Nome', 'Valor'])
+            else:
+                seen_ids[id_value] = dataLine
+        return dados
+
     def resume_data(self, dados: List[DataLine]):
         """
         Faz um resumo dos dados listados, separando créditos, débitos e o saldo final.
@@ -162,7 +188,7 @@ class Conciliacao:
                 continue
 
             tipo = tipo_field.value
-            valor = float(valor_field.value)
+            valor = float(str(valor_field.value).replace(",", "."))
 
             if tipo == "CREDITO":
                 total_credito += valor
@@ -195,6 +221,9 @@ class Conciliacao:
             
         # 4 - Gravar os dados após conciliação
         if len(dados_conciliados) > 0:
+            ### TODO: Verificar se dentro dos dados para serem conciliados há alguma duplicação, se houver deve corrigir a duplicação adicionando um segundo ao horário e refazendo o id da duplicação!
+            dados_conciliados = self.normalizar_duplicacoes(dados_conciliados)
+            
             print('======= RESUMO CONCILIADOS')
             self.resume_data(dados_conciliados)
             dados_conciliados = atual_conciliados + dados_conciliados

@@ -47,12 +47,12 @@
 			{
                 "coluna": "Categoria Gastos",
                 "tipo": "static",
-                "value": "DÍZIMOS E OFERTAS"
+                "value": ""
             },
 			{
                 "coluna": "Observação",
                 "tipo": "static",
-                "value": "-"
+                "value": ""
             }
         ]
     },
@@ -112,65 +112,12 @@
 			{
                 "coluna": "Categoria Gastos",
                 "tipo": "static",
-                "value": "DÍZIMOS E OFERTAS"
+                "value": ""
             },
 			{
                 "coluna": "Observação",
                 "tipo": "static",
-                "value": "-"
-            }
-        ]
-    },
-	{
-        "extensao": "especie",
-        "banco": "ESPECIE",
-        "outputPath": "conciliados",
-        "headers": ["Data", "Nome", "Ministério", "Valor"],
-        "fields": [
-            {
-                "coluna": "Id",
-                "tipo": "hash",
-                "hashHeaders": ["Data", "Nome", "Valor"]
-            },
-            {
-                "coluna": "Data",
-                "header": "Data",
-                "tipo": "string"
-            },
-            {
-                "coluna": "Hora",
-                "tipo": "static",
-                "value": "00:00:00"
-            },
-            {
-                "coluna": "Nome",
-                "header": "Nome",
-                "tipo": "string"
-            },
-            {
-                "coluna": "Tipo",
-                "tipo": "static",
-                "value": "DEBITO"
-            },
-            {
-                "coluna": "Banco",
-                "tipo": "static",
-                "value": "ESPÉCIE"
-            },
-            {
-                "coluna": "Valor",
-                "header": "Valor",
-                "tipo": "decimal"
-            },
-			{
-                "coluna": "Categoria Gastos",
-                "header": "Ministério",
-                "tipo": "string"
-            },
-			{
-                "coluna": "Observação",
-                "tipo": "static",
-                "value": "-"
+                "value": ""
             }
         ]
     }

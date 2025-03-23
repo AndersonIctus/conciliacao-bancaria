@@ -3,8 +3,8 @@ BANK_FILE ?= data/input/bank-default.cora.csv
 
 deploy:
 	pyinstaller --onefile conciliacao-bancaria.py
-	copy templates.json dist
-	copy conciliar_arquivo.bat dist
+	cp templates.json dist
+	cp conciliar_arquivo.bat dist
 
 run: 
 	python conciliacao-bancaria.py --bank-file $(BANK_FILE)

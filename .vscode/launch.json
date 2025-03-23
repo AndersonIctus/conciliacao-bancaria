@@ -11,6 +11,7 @@
             "module": "conciliacao-bancaria",
             "args": [
                 "--bank-file=data/input/bank-default.cora.csv"
+                // "--bank-file=data/input/exemplo_conciliacao_especie.ESPECIE.csv"
             ]
         }
     ]
